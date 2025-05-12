@@ -10,20 +10,67 @@ Original file is located at
 import streamlit as st
 import random
 
+st.set_page_config(page_title="Guess the Number", page_icon=":game_die:")
+
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #f0f8ff;
+    }
+    .stNumberInput > div > div input {
+        border: 2px solid #007bff;
+        border-radius: 7px;
+        padding: 10px;
+    }
+    .stButton > button {
+        background-color: #007bff;
+        color: white;
+        border-radius: 7px;
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    .success-message {
+        color: green;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    .warning-message {
+        color: orange;
+        font-size: 1.1em;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 def guess_number_streamlit():
-    st.title("Guess the Number Game!")
-    st.write("I'm thinking of a number between 1 and 100. Try to guess it!")
+    st.title(":blue[Guess the Number Game!] :game_die:")
+    st.subheader("Try to guess the secret number between 1 and 100!")
 
-    talaaterbah = 23  # The secret number
+    if 'secret_number' not in st.session_state:
+        st.session_state['secret_number'] = random.randint(1, 100)
+        st.session_state['attempts'] = 0
+
     guess = st.number_input("Enter your guess:", min_value=1, max_value=100, step=1)
+    guess_button = st.button("Guess")
+    feedback = st.empty()
 
-    if st.button("Guess"):
-        if guess < talaaterbah:
-            st.write("Your guess is too low.")
-        elif guess > talaaterbah:
-            st.write("Your guess is too high.")
+    if guess_button:
+        st.session_state['attempts'] += 1
+        if guess < st.session_state['secret_number']:
+            feedback.markdown("<p class='warning-message'>Your guess is too low. Try again!</p>", unsafe_allow_html=True)
+        elif guess > st.session_state['secret_number']:
+            feedback.markdown("<p class='warning-message'>Your guess is too high. Give it another shot!</p>", unsafe_allow_html=True)
         else:
-            st.success("That's it! You guessed correctly!")
+            feedback.markdown(f"<p class='success-message'>🎉 That's it! You guessed the number {st.session_state['secret_number']} correctly in {st.session_state['attempts']} attempts! 🎉</p>", unsafe_allow_html=True)
+            if st.button("Play Again"):
+                del st.session_state['secret_number']
+                del st.session_state['attempts']
+                st.rerun()
+
+    if 'attempts' in st.session_state and st.session_state['attempts'] > 0 and 'secret_number' in st.session_state:
+        st.write(f"Attempts: {st.session_state['attempts']}")
 
 if __name__ == "__main__":
     guess_number_streamlit()
